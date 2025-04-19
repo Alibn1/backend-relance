@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('relance_dossiers', function (Blueprint $table) {
             $table->id();
-            $table->id();
             $table->string('numero_relance_dossier', 8);
             $table->date('date_relance_dossier')->nullable();
             $table->string('code_client', 6)->nullable();
