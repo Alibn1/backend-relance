@@ -57,7 +57,8 @@ class ClientController extends Controller
             return response()->json(['message' => 'Client non trouvé'], 404);
         }
 
-        return response()->json($client);
+        //return response()->json($client);
+        return response()->json($client->toArray());
     }
 
     /**

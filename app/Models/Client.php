@@ -34,6 +34,16 @@ class Client extends Model
         'actif' => 'boolean',
     ];
 
+    public function toArray()
+    {
+        $attributes = parent::toArray(); // Récupérer les attributs par défaut
+
+        // Ajouter manuellement le code_client dans la réponse JSON
+        $attributes['code_client'] = $this->code_client;
+
+        return $attributes;
+    }
+
     public function releves()
     {
         return $this->hasMany(Releve::class, 'code_client', 'code_client');

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class EventRelance extends Model
 {
@@ -56,4 +57,28 @@ class EventRelance extends Model
      * Relation avec le modèle Client.
      * Chaque événement de relance appartient à un client.
      */
+
+    protected static function booted() 
+    {
+        static::creating(function ($evenement) {
+            $prefix = 'EVR';
+            $yearSuffix = now()->format('y'); // exemple : 25
+            $base = $prefix . $yearSuffix; // exemple : EVR25
+
+            // Chercher le dernier numéro commençant par EVR25
+            $lastEvenement = self::where('numero_evenement', 'like', $base . '%')
+                                ->orderBy('numero_evenement', 'desc')
+                                ->first();
+
+            if ($lastEvenement) {
+                $lastNumber = (int) substr($lastEvenement->numero_evenement, 5); // récupère les 3 derniers chiffres
+                $nextNumber = $lastNumber + 1;
+            } else {
+                $nextNumber = 1;
+            }
+
+            $evenement->numero_evenement = $base . str_pad($nextNumber, 3, '0', STR_PAD_LEFT); // ex: EVR25001
+        });
+    }
+
 }

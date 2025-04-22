@@ -22,7 +22,7 @@ class EventRelanceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'numero_evenement' => 'required|string|max:30|unique:event_relances',
+            //'numero_evenement' => 'required|string|max:30|unique:event_relances',
             'numero_relance' => 'required|string|exists:etape_relances,numero_relance',
             'date_evenement' => 'nullable|date',
             'statut' => 'nullable|string|exists:statut_relance_detail,code',

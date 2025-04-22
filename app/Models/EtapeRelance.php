@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class EtapeRelance extends Model
 {
@@ -82,4 +83,27 @@ class EtapeRelance extends Model
 
     //historiquerelation numero relance
     //sousmodelerelation code sous modele
+
+
+    protected static function booted()
+    {
+    static::creating(function ($etape) {
+        $yearSuffix = now()->format('y'); // ex: 25
+        $prefix = 'ETR';
+
+        // Cherche le dernier numéro existant
+        $last = self::where('numero_relance', 'like', $prefix . $yearSuffix . '%')
+                    ->orderByDesc('numero_relance')
+                    ->first();
+
+        if (!$last) {
+            $nextNumber = 1;
+        } else {
+            $lastNumber = (int) substr($last->numero_relance, 5);
+            $nextNumber = $lastNumber + 1;
+        }
+
+        $etape->numero_relance = $prefix . $yearSuffix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        });
+    }   
 }

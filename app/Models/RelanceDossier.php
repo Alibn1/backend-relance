@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class RelanceDossier extends Model
 {
@@ -70,5 +71,34 @@ class RelanceDossier extends Model
         return self::whereRaw('code_client = ?', [$ClientId])
             ->whereRaw('statut = 1', ['EN_COURS'])
             ->get();
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($dossier) {
+            // Année en cours
+            $year = now()->year; 
+            $yearSuffix = now()->format('y'); // Ex: 25 pour 2025
+            $prefix = 'REL'; // Préfixe pour RelanceDossier
+
+            // Chercher le dernier numéro généré dans la table pour ce modèle
+            $lastNumero = DB::table('relance_dossiers')
+                ->where('numero_relance_dossier', 'like', "$prefix$yearSuffix%") // Filtrer par année et préfixe
+                ->orderByDesc('numero_relance_dossier')
+                ->value('numero_relance_dossier');
+
+            // Si aucun numéro n'existe, commencer à REL25001
+            if (!$lastNumero) {
+                $val = $prefix . $yearSuffix . '001';
+            } else {
+                // Extraire le dernier numéro et incrémenter
+                $lastNumber = (int) substr($lastNumero, 5); // Ex: 001
+                $nextNumber = $lastNumber + 1;
+                $val = $prefix . $yearSuffix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            }
+
+            // Assigner le numéro généré au modèle
+            $dossier->numero_relance_dossier = $val;
+        });
     }
 }

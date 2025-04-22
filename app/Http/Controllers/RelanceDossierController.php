@@ -16,7 +16,7 @@ class RelanceDossierController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'numero_relance_dossier' => 'required|string|max:8|unique:relance_dossiers,numero_relance_dossier',
+            'numero_relance_dossier' => 'nullable|string|max:12|unique:relance_dossiers,numero_relance_dossier',
             'date_relance_dossier' => 'nullable|date',
             'code_client' => 'required|string|exists:clients,code_client',
             'contact_interlocuteur' => 'nullable|string|max:25',

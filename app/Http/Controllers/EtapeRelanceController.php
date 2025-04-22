@@ -29,7 +29,7 @@ class EtapeRelanceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'numero_relance' => 'required|string|max:8|unique:etape_relances',
+            //'numero_relance' => 'required|string|max:8|unique:etape_relances',
             'numero_relance_dossier' => 'required|string|max:8|exists:relance_dossiers,numero_relance_dossier',
             'code_client' => 'required|string|exists:clients,code_client',
             'code_sous_modele' => 'nullable|string|max:8',
@@ -112,4 +112,10 @@ class EtapeRelanceController extends Controller
 
         return response()->json(null, 204);
     }
+
+    public function scopeActives($query)
+    {
+        return $query->where('etape_actif', '1');
+    }
+
 }

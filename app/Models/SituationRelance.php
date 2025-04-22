@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class SituationRelance extends Model
 {
@@ -49,8 +50,21 @@ class SituationRelance extends Model
         return $this->belongsTo(CreanceRelance::class, 'ref_creance', 'ref_creance');
     }
 
+    //public function statutRelanceDetail()
+    ///{
+    //    return $this->through('etape')->has('statutRelanceDetail');
+    //}
+
     public function statutRelanceDetail()
     {
-        return $this->through('etape')->has('statutRelanceDetail');
+        return $this->hasOneThrough(
+            StatutRelanceDetail::class,
+            EtapeRelance::class,
+            'numero_relance',           // Foreign key on EtapeRelance table
+            'numero_etape_relance',     // Foreign key on StatutRelanceDetail table
+            'numero_etape_relance',     // Local key on SituationRelance table
+            'numero_relance'            // Local key on EtapeRelance table
+        );
     }
+
 }

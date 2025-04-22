@@ -23,14 +23,14 @@ return new class extends Migration
                 -- Récupérer le dernier numéro de code_releve (format REL25000, REL25001, ...)
                 SELECT MAX(CAST(SUBSTRING(code_releve FROM 4) AS INTEGER)) INTO last_number
                 FROM releves
-                WHERE code_releve ~ '^REL[0-9]+$';
+                WHERE code_releve ~ '^RLV[0-9]+$';
 
                 IF last_number IS NULL THEN
                     last_number := 25000;  -- Si aucun numéro n'est trouvé, commencer à REL25000
                 END IF;
 
                 -- Générer le nouveau code
-                new_code := 'REL' || (last_number + 1);  -- Incrémenter de 1
+                new_code := 'RLV' || (last_number + 1);  -- Incrémenter de 1
                 NEW.code_releve := new_code;  -- Assigner le code généré à la nouvelle ligne
                 RETURN NEW;
             END;
