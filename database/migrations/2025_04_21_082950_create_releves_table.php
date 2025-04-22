@@ -18,8 +18,10 @@ return new class extends Migration
             $table->date('date_releve');
             $table->decimal('solde_initiale', 15, 2)->default(0);
             $table->decimal('solde_finale', 15, 2)->default(0);
-            $table->string('statut')->nullable();
+            $table->string('statut', 20)->default('EN_ATTENTE');
             $table->text('commentaire')->nullable();
+            $table->string('created_by', 25);
+            $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('code_client')->references('code_client')->on('clients')->onDelete('cascade');

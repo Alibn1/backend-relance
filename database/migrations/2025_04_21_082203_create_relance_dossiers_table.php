@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('relance_dossiers', function (Blueprint $table) {
             $table->id();
-            $table->string('numero_relance_dossier', 8);
+            $table->string('numero_relance_dossier', 8)->unique();
             $table->date('date_relance_dossier')->nullable();
             $table->string('code_client', 6)->nullable();
             $table->string('contact_interlocuteur', 25)->nullable();
@@ -38,6 +38,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('relance_dossiers');
+        Schema::table('relance_dossiers', function (Blueprint $table) {
+            $table->dropForeign(['code_client']);
+            $table->dropForeign(['statut']);
+            //$table->dropForeign(['code_modele']);
+        });
+
+        Schema::dropIfExists('dossier_relances');
     }
 };
