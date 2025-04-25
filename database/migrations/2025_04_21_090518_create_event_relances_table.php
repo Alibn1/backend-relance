@@ -35,6 +35,8 @@ return new class extends Migration
 
             $table->date('date_prochaine_action')->nullable()->comment('Date Prochaine Action');
 
+            $table->timestamps();
+
             // 🔗 Clé étrangère vers etape_relances
             $table->foreign('numero_relance')
                   ->references('numero_relance')
