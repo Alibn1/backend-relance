@@ -10,7 +10,7 @@ class RelanceDossierController extends Controller
 {
     public function index()
     {
-        return response()->json(RelanceDossier::with(['client', 'statut', 'etapeRelances', 'creanceRelances'])->get());
+        return response()->json(RelanceDossier::with(['client', 'statut', 'etapeRelances'])->get());
     }
 
     public function store(Request $request)

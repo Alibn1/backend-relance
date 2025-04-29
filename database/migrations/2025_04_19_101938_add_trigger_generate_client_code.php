@@ -15,7 +15,7 @@ return new class extends Migration {
                 last_number INT;
                 new_code TEXT;
             BEGIN
-                SELECT MAX(CAST(SUBSTRING(code_client FROM 2) AS INTEGER)) INTO last_number
+                SELECT MAX(CAST(SUBSTRING(code_client FROM 4) AS INTEGER)) INTO last_number
                 FROM clients
                 WHERE code_client ~ '^CLT[0-9]+$';
 

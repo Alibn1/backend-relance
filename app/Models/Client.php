@@ -34,13 +34,26 @@ class Client extends Model
         'actif' => 'boolean',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($client) {
+            if (empty($client->code_client)) {
+                $lastClient = self::where('code_client', 'like', 'CLT%')
+                                ->orderByDesc('id')
+                                ->first();
+
+                $nextNumber = $lastClient ? ((int)substr($lastClient->code_client, 3)) + 1 : 1;
+                $client->code_client = 'CLT' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
     public function toArray()
     {
-        $attributes = parent::toArray(); // Récupérer les attributs par défaut
-
-        // Ajouter manuellement le code_client dans la réponse JSON
+        $attributes = parent::toArray();
         $attributes['code_client'] = $this->code_client;
-
         return $attributes;
     }
 
@@ -49,7 +62,7 @@ class Client extends Model
         return $this->hasMany(Releve::class, 'code_client', 'code_client');
     }
 
-    public function relance()
+    public function relances()
     {
         return $this->hasMany(RelanceDossier::class, 'code_client', 'code_client');
     }
