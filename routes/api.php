@@ -104,3 +104,6 @@ Route::prefix('event-relances')->group(function () {
     Route::patch('{id}', [EventRelanceController::class, 'update']);
     Route::delete('{id}', [EventRelanceController::class, 'destroy']);
 });
+
+Route::get('/clients/{code_client}/releves', [ClientController::class, 'getReleves']);
+Route::get('/clients/{code_client}/relances', [ClientController::class, 'getEtapeRelances']);

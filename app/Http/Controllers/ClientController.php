@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Releve;
+use App\Models\EtapeRelance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -51,9 +53,9 @@ class ClientController extends Controller
     /**
      * Afficher un client spécifique.
      */
-    public function show($id)
+    public function show($code_client)
     {
-        $client = Client::find($id);
+        $client = Client::where('code_client', $code_client)->first();
 
         if (!$client) {
             return response()->json(['message' => 'Client non trouvé'], 404);
@@ -114,4 +116,19 @@ class ClientController extends Controller
 
         return response()->json(['message' => 'Client supprimé avec succès']);
     }
+
+    // Récupérer les étapes de relance pour un client
+    public function getEtapeRelances($codeClient)
+    {
+        $etapes = EtapeRelance::where('code_client', $codeClient)->get();
+        return response()->json($etapes);
+    }
+
+    // Récupérer les relevés pour un client
+    public function getReleves($codeClient)
+    {
+        $releves = Releve::where('code_client', $codeClient)->get();
+        return response()->json($releves);
+    }
+
 }

@@ -10,7 +10,7 @@ class StatutRelanceController extends Controller
 {
     public function index()
     {
-        return response()->json(StatutRelance::with(['details', 'relances'])->get());
+        return response()->json(StatutRelance::with(['relances'])->get());
     }
 
     public function store(Request $request)

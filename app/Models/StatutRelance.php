@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StatutRelance extends Model
 {
@@ -26,10 +27,10 @@ class StatutRelance extends Model
         'actif' => 'boolean',
     ];
 
-    public function details(): HasMany
-    {
-        return $this->hasMany(StatutRelanceDetail::class, 'statut', 'code');
-    }
+    // public function details(): HasMany
+    // {
+    //     return $this->hasMany(StatutRelanceDetail::class, 'statut_detail', 'code');
+    // }
 
     public function relances(): HasMany
     {
