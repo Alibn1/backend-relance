@@ -11,6 +11,7 @@ use App\Http\Controllers\ReleveController;
 use App\Http\Controllers\SituationRelanceController;
 use App\Http\Controllers\StatutRelanceController;
 use App\Http\Controllers\StatutRelanceDetailController;
+use App\Http\Controllers\SousModeleController;
 
 
 Route::post('register', [AuthController::class, 'register']);
@@ -50,6 +51,7 @@ Route::prefix('etape-relances')->group(function () {
     Route::put('{id}', [EtapeRelanceController::class, 'update']);
     Route::patch('{id}', [EtapeRelanceController::class, 'update']);
     Route::delete('{id}', [EtapeRelanceController::class, 'destroy']);
+    Route::get('{id}/download', [EtapeRelanceController::class, 'downloadPdf']);
 });
 
 Route::prefix('creance-relances')->group(function () {
@@ -103,6 +105,18 @@ Route::prefix('event-relances')->group(function () {
     Route::put('{id}', [EventRelanceController::class, 'update']);
     Route::patch('{id}', [EventRelanceController::class, 'update']);
     Route::delete('{id}', [EventRelanceController::class, 'destroy']);
+});
+
+Route::prefix('sous-modeles')->group(function () {
+    Route::get('/', [SousModeleController::class, 'index']);
+    Route::post('/', [SousModeleController::class, 'store']);
+    
+    // Route::post('/generate', [SousModeleController::class, 'generateFromReleve']);
+    // Route::get('/{code}/download', [SousModeleController::class, 'downloadPdf']);
+
+    Route::get('/{code}', [SousModeleController::class, 'show']);
+    Route::put('/{code}', [SousModeleController::class, 'update']);
+    Route::delete('/{code}', [SousModeleController::class, 'destroy']);
 });
 
 Route::get('/clients/{code_client}/releves', [ClientController::class, 'getReleves']);

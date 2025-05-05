@@ -31,6 +31,7 @@ class EtapeRelance extends Model
         'etape_actif',
         'objet_relance_1',
         'objet_relance_2',
+        'pdf_path'
     ];
 
     // Casts pour les dates
@@ -60,6 +61,11 @@ class EtapeRelance extends Model
     public function eventRelances()
     {
         return $this->hasMany(EventRelance::class, 'numero_relance', 'numero_relance');
+    }
+
+    public function sousModele()
+    {
+        return $this->belongsTo(SousModele::class, 'code_sous_modele', 'code_sous_modele');
     }
 
     /**
@@ -105,5 +111,17 @@ class EtapeRelance extends Model
 
         $etape->numero_relance = $prefix . $yearSuffix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
         });
-    }   
+    }
+    
+        public function downloadPdf($id)
+    {
+        $etape = EtapeRelance::findOrFail($id);
+
+        if (!$etape->pdf_path || !\Storage::disk('public')->exists($etape->pdf_path)) {
+            return response()->json(['error' => 'Fichier PDF introuvable.'], 404);
+        }
+
+        return response()->download(storage_path('app/public/' . $etape->pdf_path));
+    }
+
 }
