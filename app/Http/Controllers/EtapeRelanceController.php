@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\EtapeRelance;
+use App\Models\RelanceDossier;
 use App\Services\SousModelePDFService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class EtapeRelanceController extends Controller
 {
@@ -12,139 +16,106 @@ class EtapeRelanceController extends Controller
 
     public function __construct(SousModelePDFService $pdfService)
     {
+        $this->middleware('auth:api');
         $this->pdfService = $pdfService;
     }
 
-    /**
-     * Lister toutes les étapes de relance avec relations.
-     */
+    public function getByClient($code_client)
+    {
+        return EtapeRelance::where('code_client', $code_client)->get();
+    }
+
+
     public function index()
     {
         $etapes = EtapeRelance::with([
-            'relanceDossier',
-            'statutRelanceDetail',
-            'client',
-            'eventRelances',
-            'situationRelances',
-            'sousModele' // 👉 Ajout : pour charger aussi le sous-modèle lié
+            'relanceDossier', 'statutRelanceDetail', 'client', 'eventRelances', 'situationRelances', 'sousModele'
         ])->get();
 
         return response()->json($etapes);
     }
 
-    /**
-     * Créer une nouvelle étape de relance (et génère le PDF si un sous-modèle est sélectionné).
-     */
-    public function store(Request $request)
+    public function store(Request $request, $ndr)
     {
-        $validated = $request->validate([
-            //'numero_relance' => 'required|string|max:8|unique:etape_relances',
-            'numero_relance_dossier' => 'required|string|max:8|exists:relance_dossiers,numero_relance_dossier',
-            'code_client' => 'required|string|exists:clients,code_client',
-            'code_sous_modele' => 'nullable|string|exists:sous_modeles,code_sous_modele',
-            'titre_sous_modele' => 'nullable|string|max:30',
-            'ordre' => 'nullable|string|max:2',
-            'statut_detail' => 'nullable|string|exists:statut_relance_detail,code',
-            'date_par_statut' => 'nullable|date',
-            'etat_relance_actif' => 'nullable|string|max:1',
-            'date_rappel' => 'nullable|date',
-            'nombre_jour_rappel' => 'nullable|integer',
-            'methode_envoi' => 'nullable|string|max:30',
-            'executant_envoi' => 'nullable|string|max:25',
-            'date_creation_debut' => 'nullable|date',
-            'date_creation_fin' => 'nullable|date',
-            'etape_actif' => 'nullable|string|max:1',
-            'objet_relance_1' => 'nullable|string|max:50',
-            'objet_relance_2' => 'nullable|string|max:50',
-        ]);
+        $relance = RelanceDossier::with('client')->where('numero_relance_dossier', $ndr)->first();
 
-        $etape = EtapeRelance::create($validated);
-
-        // 👉 Génération automatique du PDF si un sous-modèle est choisi
-        if (!empty($validated['code_sous_modele'])) {
-            $client = $etape->client;
-            // $releve = $client->releves()->latest()->with('lignes')->first();
-            $releve = $client->releves()->latest()->first();
-            $sousModele = $etape->sousModele;
-
-            if ($client && $releve && $sousModele) {
-                $result = $this->pdfService->generatePDF($client, $releve, $sousModele);
-
-                // Sauvegarde le chemin du PDF dans la colonne pdf_path de l'étape
-                $etape->pdf_path = $result['path'];
-                $etape->save();
-            }
+        if (!$relance) {
+            return response()->json(['message' => "Relance $ndr introuvable."], 404);
         }
 
-        return response()->json([
-            'message' => 'Étape de relance créée avec succès.',
-            'data' => $etape
-        ], 201);
+        $data = $request->all();
+
+        DB::beginTransaction();
+        try {
+            $etape = EtapeRelance::create([
+                'numero_relance_dossier' => $ndr,
+                'code_client' => $relance->code_client,
+                'code_sous_modele' => $data['code_sous_modele'] ?? null,
+                'titre_sous_modele' => $data['titre_sous_modele'] ?? null,
+                'ordre' => $data['ordre'] ?? null,
+                'statut_detail' => $data['statut_detail'] ?? 'BROUILLON',
+                'date_rappel' => $data['date_rappel'] ?? null,
+                'nombre_jour_rappel' => $data['nb_jours_rappel'] ?? 7,
+                'methode_envoi' => $data['methode_envoi'] ?? null,
+                'executant_envoi' => Auth::user()->name ?? 'System',
+                'objet_relance_1' => $data['objet_relance_1'] ?? null,
+                'objet_relance_2' => $data['objet_relance_2'] ?? null,
+                'date_creation_debut' => now(),
+                'etat_relance_actif' => 'O',
+                'etape_actif' => 'O'
+            ]);
+
+            if (!empty($etape->code_sous_modele)) {
+                $client = $etape->client;
+                $releve = $client->releves()->latest()->first();
+                $sousModele = $etape->sousModele;
+
+                if ($client && $releve && $sousModele) {
+                    $result = $this->pdfService->generatePDF($client, $releve, $sousModele);
+                    $etape->pdf_path = $result['path'];
+                    $etape->save();
+                }
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Étape créée avec succès.', 'data' => $etape], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur création étape :', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Erreur lors de la création.', 'exception' => $e->getMessage()], 500);
+        }
     }
 
-    /**
-     * Afficher une étape de relance spécifique.
-     */
     public function show($id)
     {
         $etape = EtapeRelance::with([
-            'relanceDossier',
-            'statutRelanceDetail',
-            'client',
-            'eventRelances',
-            'situationRelances',
-            'sousModele' // 👉 Ajout pour bien voir aussi le sous-modèle lié
+            'relanceDossier', 'statutRelanceDetail', 'client', 'eventRelances', 'situationRelances', 'sousModele'
         ])->findOrFail($id);
 
         return response()->json($etape);
     }
 
-    /**
-     * Mettre à jour une étape de relance.
-     */
     public function update(Request $request, $id)
     {
         $etape = EtapeRelance::findOrFail($id);
 
-        $validated = $request->validate([
-            'numero_relance_dossier' => 'sometimes|required|string|max:8|exists:relance_dossiers,numero_relance_dossier',
-            'code_client' => 'sometimes|required|string|exists:clients,code_client',
-            'code_sous_modele' => 'nullable|string|exists:sous_modeles,code_sous_modele',
-            'titre_sous_modele' => 'nullable|string|max:30',
-            'ordre' => 'nullable|string|max:2',
-            'statut_detail' => 'nullable|string|exists:statut_relance_detail,code',
-            'date_par_statut' => 'nullable|date',
-            'etat_relance_actif' => 'nullable|string|max:1',
-            'date_rappel' => 'nullable|date',
-            'nombre_jour_rappel' => 'nullable|integer',
-            'methode_envoi' => 'nullable|string|max:30',
-            'executant_envoi' => 'nullable|string|max:25',
-            'date_creation_debut' => 'nullable|date',
-            'date_creation_fin' => 'nullable|date',
-            'etape_actif' => 'nullable|string|max:1',
-            'objet_relance_1' => 'nullable|string|max:50',
-            'objet_relance_2' => 'nullable|string|max:50',
-        ]);
+        $etape->update($request->only([
+            'titre_sous_modele', 'ordre', 'statut_detail', 'date_par_statut',
+            'etat_relance_actif', 'date_rappel', 'nombre_jour_rappel', 'methode_envoi',
+            'executant_envoi', 'date_creation_debut', 'date_creation_fin',
+            'etape_actif', 'objet_relance_1', 'objet_relance_2'
+        ]));
 
-        $etape->update($validated);
-
-        return response()->json([
-            'message' => 'Étape de relance mise à jour avec succès.',
-            'data' => $etape
-        ]);
+        return response()->json(['message' => 'Étape mise à jour avec succès.', 'data' => $etape]);
     }
 
-    /**
-     * Supprimer une étape de relance.
-     */
     public function destroy($id)
     {
         $etape = EtapeRelance::findOrFail($id);
         $etape->delete();
 
-        return response()->json([
-            'message' => 'Étape de relance supprimée avec succès.'
-        ], 204);
+        return response()->json(['message' => 'Étape supprimée avec succès.'], 204);
     }
 
     public function scopeActives($query)

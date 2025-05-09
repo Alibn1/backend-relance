@@ -101,4 +101,10 @@ class RelanceDossierController extends Controller
 
         return response()->json(['message' => 'Dossier supprimé avec succès']);
     }
+
+    public function getRelancesByClient($code_client)
+    {
+    $relances = RelanceDossier::where('code_client', $code_client)->get();
+    return response()->json($relances);
+    }
 }

@@ -46,7 +46,7 @@ Route::prefix('releves')->group(function () {
 
 Route::prefix('etape-relances')->group(function () {
     Route::get('/', [EtapeRelanceController::class, 'index']);
-    Route::post('/', [EtapeRelanceController::class, 'store']);
+    //Route::post('/', [EtapeRelanceController::class, 'store']);
     Route::get('{id}', [EtapeRelanceController::class, 'show']);
     Route::put('{id}', [EtapeRelanceController::class, 'update']);
     Route::patch('{id}', [EtapeRelanceController::class, 'update']);
@@ -69,6 +69,7 @@ Route::prefix('relance-dossiers')->group(function () {
     Route::post('/', [RelanceDossierController::class, 'store']);
     Route::put('{id}', [RelanceDossierController::class, 'update']);
     Route::delete('{id}', [RelanceDossierController::class, 'destroy']);
+    Route::post('{numero_relance_dossier}/etape-relances', [EtapeRelanceController::class, 'store']);
 });
 
 Route::prefix('situation-relances')->group(function () {
@@ -120,4 +121,7 @@ Route::prefix('sous-modeles')->group(function () {
 });
 
 Route::get('/clients/{code_client}/releves', [ClientController::class, 'getReleves']);
-Route::get('/clients/{code_client}/relances', [ClientController::class, 'getEtapeRelances']);
+//Route::get('/clients/{code_client}/relances', [ClientController::class, 'getEtapeRelances']);
+Route::get('/clients/{code_client}/relances', [RelanceDossierController::class, 'getRelancesByClient']);
+Route::get('/clients/{code_client}/etape-relances', [EtapeRelanceController::class, 'getByClient']);
+
