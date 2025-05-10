@@ -16,7 +16,7 @@ class ClientController extends Controller
     public function index()
     {
         return response()->json(
-            Client::with(['releves', 'relances'])->get()
+            Client::with(['releves', 'relances', 'etapeRelances'])->get()
         );
     }
 

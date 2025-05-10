@@ -67,6 +67,11 @@ class Client extends Model
         return $this->hasMany(RelanceDossier::class, 'code_client', 'code_client');
     }
 
+    public function etapeRelances()
+    {
+        return $this->hasMany(EtapeRelance::class, 'code_client', 'code_client');
+    }
+
     //public function historique()
     //{
       //  return $this->hasMany(HistoriqueRelance::class, 'code_client', 'code_client');
