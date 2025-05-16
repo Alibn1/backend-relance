@@ -45,13 +45,21 @@ class RelanceDossierController extends Controller
 
     public function show($id)
     {
-        $dossier = RelanceDossier::with(['client', 'statut', 'etapeRelances', 'creanceRelances'])->find($id);
+        $dossier = RelanceDossier::with(['client', 'statut', 'etapeRelances'])
+        ->where('numero_relance_dossier', $id)
+        ->first();
 
         if (!$dossier) {
-            return response()->json(['message' => 'Dossier non trouvé'], 404);
+        return response()->json([
+            'success' => false,
+            'message' => 'Dossier non trouvé'
+            ], 404);
         }
 
-        return response()->json($dossier);
+        return response()->json([
+        'success' => true,
+        'data' => $dossier
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -104,7 +112,7 @@ class RelanceDossierController extends Controller
 
     public function getRelancesByClient($code_client)
     {
-    $relances = RelanceDossier::where('code_client', $code_client)->get();
-    return response()->json($relances);
+        $relances = RelanceDossier::where('code_client', $code_client)->get();
+        return response()->json($relances);
     }
 }
