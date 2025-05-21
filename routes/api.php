@@ -70,6 +70,8 @@ Route::prefix('relance-dossiers')->group(function () {
     Route::put('{id}', [RelanceDossierController::class, 'update']);
     Route::delete('{id}', [RelanceDossierController::class, 'destroy']);
     Route::post('{numero_relance_dossier}/etape-relances', [EtapeRelanceController::class, 'store']);
+    // Relances - changement de statut
+        Route::patch('/{numero_relance_dossier}/status', [RelanceDossierController::class, 'updateStatus']);
 });
 
 Route::prefix('situation-relances')->group(function () {
