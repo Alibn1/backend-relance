@@ -121,48 +121,44 @@ class RelanceDossierController extends Controller
     }
 
      public function updateStatus(Request $request, $ndr)
-{
-    $dossier = RelanceDossier::where('numero_relance_dossier', $ndr)->first();
+    {
+        $dossier = RelanceDossier::where('numero_relance_dossier', $ndr)->first();
 
-    if (!$dossier) {
+        if (!$dossier) {
         return response()->json([
             'success' => false,
             'message' => 'Dossier non trouvé'
         ], 404);
     }
 
-    $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
         'status' => 'required|string|in:Ouvert,Cloture',
-    ]);
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
         return response()->json(['errors' => $validator->errors()], 422);
-    }
+        }
 
-    $newStatut = strtoupper($request->input('status'));
+        $newStatut = strtoupper($request->input('status'));
 
-    // Vérifie si le code existe dans la table statut_relance
-    if (!\App\Models\StatutRelance::where('code', $newStatut)->exists()) {
+        // Vérifie si le code existe dans la table statut_relance
+        if (!\App\Models\StatutRelance::where('code', $newStatut)->exists()) {
         return response()->json([
             'success' => false,
             'message' => "Le statut $newStatut n'existe pas."
         ], 400);
     }
 
-    $dossier->statut = $newStatut;
-    $dossier->date_par_statut = now();
-    $dossier->horodatage_modification = now();
-    $dossier->utilisateur_modification = auth()->user()?->name ?? 'Système';
-    $dossier->save();
+        $dossier->statut = $newStatut;
+        $dossier->date_par_statut = now();
+        $dossier->horodatage_modification = now();
+        $dossier->utilisateur_modification = auth()->user()?->name ?? 'Système';
+        $dossier->save();
 
-    // Recharge la relation "statut" pour que le frontend voie les infos mises à jour
-    $dossier->load('statut');
+        // Recharge la relation "statut" pour que le frontend voie les infos mises à jour
+        $dossier->load('statut');
 
-    return response()->json([
-        'success' => true,
-        'message' => "Statut changé en $newStatut",
-        'data' => $dossier
-    ]);
-}
+        return $this->show($dossier->numero_relance_dossier);
+    }
 
 }
