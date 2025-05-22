@@ -68,6 +68,11 @@ class EtapeRelance extends Model
         return $this->belongsTo(SousModele::class, 'code_sous_modele', 'code_sous_modele');
     }
 
+    public function releves()
+    {
+        return $this->belongsToMany(Releve::class, 'etape_releve', 'numero_relance', 'code_releve');
+    }
+
     /**
      * Relation avec les situations de relance.
      * Une étape de relance peut avoir plusieurs situations.

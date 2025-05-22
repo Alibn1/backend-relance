@@ -36,6 +36,12 @@ class Releve extends Model
         return $this->belongsTo(Client::class, 'code_client', 'code_client');
     }
 
+    public function etapes()
+    {
+        return $this->belongsToMany(EtapeRelance::class, 'etape_releve', 'code_releve', 'numero_relance');
+    }
+
+
     //public function relance()
     //{
     //    return $this->belongsTo(HistoriqueRelance::class, 'code_releve', 'code_releve');

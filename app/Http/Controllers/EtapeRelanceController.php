@@ -29,7 +29,7 @@ class EtapeRelanceController extends Controller
     public function index()
     {
         $etapes = EtapeRelance::with([
-            'relanceDossier', 'statutRelanceDetail', 'client', 'eventRelances', 'situationRelances', 'sousModele'
+            'relanceDossier', 'statutRelanceDetail', 'client', 'eventRelances', 'situationRelances', 'sousModele', 'releves'
         ])->get();
 
         return response()->json($etapes);
@@ -65,17 +65,23 @@ class EtapeRelanceController extends Controller
                 'etape_actif' => 'O'
             ]);
 
-            if (!empty($etape->code_sous_modele)) {
-                $client = $etape->client;
-                $releve = $client->releves()->latest()->first();
-                $sousModele = $etape->sousModele;
+            // 🟢 Attacher les relevés si fournis
+        if (!empty($data['code_releves']) && is_array($data['code_releves'])) {
+            $etape->releves()->attach($data['code_releves']);
+        }
 
-                if ($client && $releve && $sousModele) {
-                    $result = $this->pdfService->generatePDF($client, $releve, $sousModele);
-                    $etape->pdf_path = $result['path'];
-                    $etape->save();
-                }
+        // 🟣 Générer PDF si possible
+        if (!empty($etape->code_sous_modele)) {
+            $client = $etape->client;
+            $releve = $client->releves()->latest()->first();
+            $sousModele = $etape->sousModele;
+
+            if ($client && $releve && $sousModele) {
+                $result = $this->pdfService->generatePDF($client, $releve, $sousModele);
+                $etape->pdf_path = $result['path'];
+                $etape->save();
             }
+        }
 
             DB::commit();
             return response()->json(['message' => 'Étape créée avec succès.', 'data' => $etape], 201);

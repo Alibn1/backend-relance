@@ -14,7 +14,11 @@ class RelanceDossierController extends Controller
 {
     public function index()
     {
-        return response()->json(RelanceDossier::with(['client', 'statut', 'etapeRelances'])->get());
+        return response()->json(
+        RelanceDossier::with(['client', 'statut', 'etapeRelances'])
+        ->orderBy('date_relance_dossier', 'asc') // tri chronologique
+        ->get()
+);
     }
 
     public function store(Request $request)
