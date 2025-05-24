@@ -70,7 +70,14 @@ class EtapeRelance extends Model
 
     public function releves()
     {
-        return $this->belongsToMany(Releve::class, 'etape_releve', 'numero_relance', 'code_releve');
+        return $this->belongsToMany(
+            Releve::class,
+            'etape_releve',
+            'numero_relance',   // Clé étrangère de l'étape
+            'code_releve',      // Clé étrangère du relevé
+            'numero_relance',   // Clé locale sur le modèle actuel
+            'code_releve'       // Clé locale sur le modèle Releve
+        );
     }
 
     /**

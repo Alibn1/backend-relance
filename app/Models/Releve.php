@@ -38,8 +38,16 @@ class Releve extends Model
 
     public function etapes()
     {
-        return $this->belongsToMany(EtapeRelance::class, 'etape_releve', 'code_releve', 'numero_relance');
+        return $this->belongsToMany(
+            EtapeRelance::class,
+            'etape_releve',
+            'code_releve',       // colonne de la table pivot qui pointe vers Releve
+            'numero_relance',    // colonne qui pointe vers EtapeRelance
+            'code_releve',       // clé locale de Releve
+            'numero_relance'     // clé locale de EtapeRelance
+        );
     }
+
 
 
     //public function relance()

@@ -67,7 +67,7 @@ class EtapeRelanceController extends Controller
 
             // 🟢 Attacher les relevés si fournis
         if (!empty($data['code_releves']) && is_array($data['code_releves'])) {
-            $etape->releves()->attach($data['code_releves']);
+            $etape->releves()->syncWithoutDetaching($data['code_releves']);
         }
 
         // 🟣 Générer PDF si possible
@@ -96,7 +96,7 @@ class EtapeRelanceController extends Controller
     public function show($id)
     {
         $etape = EtapeRelance::with([
-            'relanceDossier', 'statutRelanceDetail', 'client', 'eventRelances', 'situationRelances', 'sousModele'
+            'relanceDossier', 'statutRelanceDetail', 'client', 'eventRelances', 'situationRelances', 'sousModele', 'releves'
         ])->findOrFail($id);
 
         return response()->json($etape);
